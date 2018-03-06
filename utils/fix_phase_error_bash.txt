@@ -1,0 +1,26 @@
+
+#### change beagle.phased order
+bcftools query -f '[%POS:%SAMPLE\t%GT\n]' beagle.str1.phased.reorder.vcf.gz > beagle.out.txt 
+bcftools query -f '[%POS:%SAMPLE\t%GT\n]' shapeit.chr21.with.ref.reorder.vcf.gz -r 21:$start-$end > shapeit.out.txt 
+
+join -1 1 -2 1 shapeit.out.txt beagle.out.txt | sed 's/\ /\t/g' | awk '$2 != $3 {print}' | sed 's/:/\t/g' | awk '{print $2}' | sort | uniq -c | awk '{print $2"\t"$1}' > switch.per.sample.txt
+
+bcftools query -f '[%POS\t%SAMPLE\t%GT\n]' shapeit.chr21.with.ref.reorder.vcf.gz -r 21:$start-$end | sed 's/|/\t/g' | awk '$3 != $4 {print}' | datamash -s -g 2 count 3 > numHet.txt
+
+join -1 1 -2 1 switch.per.sample.txt numHet.txt | awk '{print $1,$2,$3,$2/$3}' | awk '$4>0.5 {print $1}' > samplesSwitched.txt
+
+grep -Fxv -f samplesSwitched.txt sample.txt > samplesCorrect.txt
+
+bcftools view beagle.str1.phased.vcf.gz --samples-file samplesCorrect.txt | bcftools annotate -x ^INFO,^FORMAT/GT -O z -o beagle.correct.vcf.gz
+bcftools view beagle.str1.phased.vcf.gz --samples-file samplesSwitched.txt | bcftools annotate -x ^INFO,^FORMAT/GT -O z -o beagle.incorrect.vcf.gz
+
+
+bcftools view beagle.incorrect.vcf.gz | awk -f change.allele.order.awk | bgzip -c > beagle.incorrect.changed.vcf.gz
+
+bcftools index beagle.correct.vcf.gz
+bcftools index beagle.incorrect.changed.vcf.gz
+bcftools-1.6/bcftools merge -m id beagle.incorrect.changed.vcf.gz beagle.correct.vcf.gz | bcftools view --samples-file sample.txt -O z -o beagle.fixed.vcf.gz
+
+
+
+
