@@ -1,9 +1,13 @@
+
 Scripts and analyses for SNP-STR imputation manuscript
 
 ## beagle_phase_strs
 Scripts to phase STR loci on XSEDE cluster computing environment.
 In the the `genfiles_100.sh` file, edit the chromosome and input VCF files. Execute the file.
 Then run the generated `pilot.sh` file to phase 100 STRs per compute job.
+
+## filter_hipstr_calls
+Scripts to filter HipSTR calls on the XSEDE cluster computing environment.
 
 ## hipstr_str_calling
 Scripts to call STRs using HipSTR on Amazon AWS.
