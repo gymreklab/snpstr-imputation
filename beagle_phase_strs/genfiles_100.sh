@@ -7,11 +7,14 @@
 #SBATCH --mem=5G
 #SBATCH -c 1
 
-##### usage: ./thisfile.sh hipstr_calls_21_minimal_unphased.vcf.gz shapeit.chr21.reorder.vcf.gz
+###
+### Edit the following variables:
 
 chr=19
 shapeitInput=shapeit.chr$chr.with.ref.vcf.gz
 hipstrInput=/oasis/projects/nsf/csd568/mgymrek/ssc-quads/hipstr_vcfs/final/hipstr.chr${chr}.allfilters.vcf.gz
+
+###
 
 hipstrfile=hipstr.chr$chr.allfilters.pass.vcf.gz
 bcftools view ${hipstrInput} -f PASS -O z -o ${hipstrfile}

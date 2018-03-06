@@ -3,12 +3,24 @@ import numpy as np
 import pandas as pd
 import pylab
 import matplotlib
+import sys
 
-header = ["sam","fam"]+["pca"+str(i) for i in range(10)]
-pca_eigvec = pd.read_csv("pca_10.eigenvec", sep=" ",names=header)
+def get_cmap(n, name='hsv'):
+    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
+    RGB color; the keyword argument name must be a standard mpl colormap name.'''
+    return plt.cm.get_cmap(name, n)
 
-label = ['AFR']*70 + ['AMR']*50 + ['EAS']*50 + ['EUR']*50 + ['SAS']*50 + ['SSC']*2076
-colors = {'AFR':'brown', 'AMR':'black', 'EAS':'green', 'EUR':'blue', 'SAS':'purple', 'SSC':'red'}
+header = ["sample","family"]+["pca"+str(i) for i in range(10)]
+pca_eigvec = pd.read_csv("pca_10.eigenvec", delim_whitespace= True, names=header)
+sample_pop = pd.read_csv("integrated_call_samples_v3.20130502.ALL.panel", delim_whitespace=True)
+
+pca_eigvec = pca_eigvec.merge(sample_pop, on = "sample", how="left")
+pca_eigvec.fillna('SSC', inplace=True)
+
+label = list(pca_eigvec['super_pop'])
+cmap = get_cmap(np.unique(label).shape[0])
+
+colors = dict([(np.unique(label)[i], np.random.rand(3,1)) for i in range(np.unique(label).shape[0])])
 
 eigvec = pca_eigvec.values[:,2:12]
 
@@ -28,11 +40,7 @@ plt.ylabel('PC2')
 
 handles,labels = ax.get_legend_handles_labels()
 
-#handles = [handles[0], handles[2], handles[3], handles[4], handles[1], handles[5]]
-#labels = [labels[0], labels[2], labels[3], labels[4], labels[1], labels[5]]
-
 leg=ax.legend(handles, labels, numpoints=1, loc='best', fancybox=True, framealpha=0.5)
-#leg.get_frame().set_alpha(0.5)
 
 plt.savefig("pca.pdf")
 
